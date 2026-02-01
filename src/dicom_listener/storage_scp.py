@@ -34,7 +34,9 @@ class DICOMReceiver:
     Args:
         ae_title: AE Title for this SCP (default: "AUTOCONTOUR")
         port: Port to listen on (default: 11112)
-        output_dir: Directory to store received files (default: C:\\Users\\IBA\\RadiotherapyData\\DICOM_exports)
+        output_dir: Directory to store received files (default: platform-dependent;
+                   C:\\Users\\IBA\\RadiotherapyData\\DICOM_exports on Windows IBA workstations,
+                   ~/RadiotherapyData/DICOM_exports elsewhere)
     """
     
     def __init__(

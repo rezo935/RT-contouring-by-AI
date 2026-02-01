@@ -145,9 +145,13 @@ python scripts/run_dicom_listener.py --ae-title AUTOCONTOUR --port 11112
 Command-line options:
 - `--ae-title`: AE Title for the DICOM SCP (default: AUTOCONTOUR)
 - `--port`: Port number to listen on (default: 11112)
-- `--output`: Output directory for received files (default: C:\Users\IBA\RadiotherapyData\DICOM_exports)
-- `--ip`: Local IP address to display in banner (default: 172.18.16.146)
+- `--output`: Output directory for received files (default: platform-dependent - see below)
+- `--ip`: Local IP address to display in banner (default: auto-detected)
 - `-v, --verbose`: Enable verbose logging
+
+**Default Output Directory:**
+- Windows IBA workstation: `C:\Users\IBA\RadiotherapyData\DICOM_exports`
+- Other systems: `~/RadiotherapyData/DICOM_exports`
 
 ### Eclipse TPS Configuration
 
@@ -156,24 +160,26 @@ To send files from Eclipse to the DICOM listener:
 1. **Open Eclipse** and go to External Beam Planning
 2. **Configure DICOM Export** destination:
    - AE Title: `AUTOCONTOUR`
-   - IP Address: `172.18.16.146` (or your Lenovo workstation IP)
+   - IP Address: Your workstation IP (displayed in the listener startup banner)
    - Port: `11112`
 3. **Export CT and RTSTRUCT** by selecting the patient case and choosing "Export to DICOM"
+
+**Note:** The listener will display your local IP address when it starts. Use this IP address in the Eclipse configuration.
 
 ### Received Data Organization
 
 Files are automatically organized in the output directory by patient and study:
 
 ```
-C:\Users\IBA\RadiotherapyData\DICOM_exports\
-├── PatientID_001\
-│   └── 20260201\
+<output_dir>/
+├── PatientID_001/
+│   └── 20260201/
 │       ├── CT_0001.dcm
 │       ├── CT_0002.dcm
 │       ├── ...
 │       └── RS_label.dcm
-├── PatientID_002\
-│   └── 20260115\
+├── PatientID_002/
+│   └── 20260115/
 │       ├── CT_0001.dcm
 │       ├── ...
 │       └── RS_ProstatePelvis.dcm
