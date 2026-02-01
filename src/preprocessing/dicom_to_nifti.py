@@ -307,48 +307,68 @@ def find_dicom_files(
     """
     Find CT series and RTSTRUCT files in a patient directory.
     
+    Searches recursively through all subdirectories to support both:
+    - Flat structure: PatientID/file.dcm
+    - Nested structure: PatientID/Date/file.dcm
+    
+    If multiple CT series directories exist, returns the first one found.
+    This is appropriate for typical RT planning workflows where one CT 
+    series is used per patient study.
+    
     Args:
         patient_dir: Directory containing patient DICOM files
         
     Returns:
         Tuple of (ct_series_path, rtstruct_path)
+        - ct_series_path: Directory containing CT DICOM files
+        - rtstruct_path: Path to RTSTRUCT DICOM file
     """
     patient_dir = Path(patient_dir)
     
     ct_series_path = None
     rtstruct_path = None
     
-    # Look for subdirectories
-    subdirs = [d for d in patient_dir.iterdir() if d.is_dir()]
+    # Find all DICOM files recursively
+    dicom_files = list(patient_dir.glob("**/*.dcm"))
     
-    if not subdirs:
-        # Files might be directly in patient_dir
-        subdirs = [patient_dir]
+    if not dicom_files:
+        return ct_series_path, rtstruct_path
     
-    for subdir in subdirs:
-        # Check for DICOM files
-        dicom_files = list(subdir.glob("*.dcm"))
-        
-        if not dicom_files:
-            continue
-        
-        # Read first file to determine modality
-        try:
-            dcm = pydicom.dcmread(dicom_files[0], stop_before_pixels=True)
-            
-            if hasattr(dcm, "Modality"):
-                if dcm.Modality == "CT":
-                    ct_series_path = subdir
-                elif dcm.Modality == "RTSTRUCT":
-                    rtstruct_path = dicom_files[0]
-            
-            # Check for RTSTRUCT by SOP Class UID
-            if hasattr(dcm, "SOPClassUID"):
-                if dcm.SOPClassUID == "1.2.840.10008.5.1.4.1.1.481.3":  # RT Structure Set Storage
-                    rtstruct_path = dicom_files[0]
+    # Group files by their parent directory
+    files_by_dir = {}
+    for file_path in dicom_files:
+        parent_dir = file_path.parent
+        if parent_dir not in files_by_dir:
+            files_by_dir[parent_dir] = []
+        files_by_dir[parent_dir].append(file_path)
+    
+    # Process each directory to identify CT series and RTSTRUCT
+    for dir_path, files in files_by_dir.items():
+        for file_path in files:
+            try:
+                dcm = pydicom.dcmread(file_path, stop_before_pixels=True)
+                
+                # Check for CT modality
+                if hasattr(dcm, "Modality") and dcm.Modality == "CT":
+                    if ct_series_path is None:
+                        ct_series_path = dir_path
+                
+                # Check for RTSTRUCT by modality or SOP Class UID
+                is_rtstruct = False
+                if hasattr(dcm, "Modality") and dcm.Modality == "RTSTRUCT":
+                    is_rtstruct = True
+                if hasattr(dcm, "SOPClassUID") and dcm.SOPClassUID == "1.2.840.10008.5.1.4.1.1.481.3":
+                    is_rtstruct = True
+                
+                if is_rtstruct and rtstruct_path is None:
+                    rtstruct_path = file_path
+                
+                # Stop early if we found both
+                if ct_series_path is not None and rtstruct_path is not None:
+                    return ct_series_path, rtstruct_path
                     
-        except Exception as e:
-            logger.debug(f"Error reading {dicom_files[0]}: {e}")
-            continue
+            except Exception as e:
+                logger.debug(f"Error reading {file_path}: {e}")
+                continue
     
     return ct_series_path, rtstruct_path
