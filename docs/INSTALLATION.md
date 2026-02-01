@@ -213,10 +213,14 @@ jupyter notebook
 
 ## Next Steps
 
-After successful installation:
+After successful installation, you're ready to start training!
 
-1. Review [DATA_PREPARATION.md](DATA_PREPARATION.md) for preparing your dataset
-2. See [TRAINING.md](TRAINING.md) for training workflows
+**👉 Follow the [GETTING STARTED GUIDE](GETTING_STARTED.md)** for a complete step-by-step workflow from installation to training.
+
+Or review individual documentation:
+
+1. [DATA_PREPARATION.md](DATA_PREPARATION.md) - Organize and prepare your dataset
+2. [TRAINING.md](TRAINING.md) - Train your models
 3. Explore the example notebook: `notebooks/01_data_exploration.ipynb`
 
 ## Getting Help
