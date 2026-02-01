@@ -311,11 +311,17 @@ def find_dicom_files(
     - Flat structure: PatientID/file.dcm
     - Nested structure: PatientID/Date/file.dcm
     
+    If multiple CT series directories exist, returns the first one found.
+    This is appropriate for typical RT planning workflows where one CT 
+    series is used per patient study.
+    
     Args:
         patient_dir: Directory containing patient DICOM files
         
     Returns:
         Tuple of (ct_series_path, rtstruct_path)
+        - ct_series_path: Directory containing CT DICOM files
+        - rtstruct_path: Path to RTSTRUCT DICOM file
     """
     patient_dir = Path(patient_dir)
     
