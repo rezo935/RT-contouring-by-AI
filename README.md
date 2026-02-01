@@ -51,6 +51,19 @@ pip install -e .
 
 For detailed installation instructions, see [INSTALLATION.md](docs/INSTALLATION.md).
 
+### ✨ Next Steps After Installation
+
+**New to the project?** Follow our step-by-step guide:
+
+👉 **[GETTING STARTED GUIDE](docs/GETTING_STARTED.md)** - Complete workflow from installation to training
+
+This guide walks you through:
+- Organizing your DICOM data
+- Running quality assessment
+- Preprocessing datasets
+- Training your first model
+- Running inference
+
 ### Basic Usage
 
 #### 1. Quality Assessment
@@ -98,6 +111,7 @@ python scripts/run_inference.py \
 
 ## Documentation
 
+- 🚀 **[Getting Started Guide](docs/GETTING_STARTED.md)** - Quick path from installation to training (START HERE!)
 - 📘 [Installation Guide](docs/INSTALLATION.md) - Detailed setup instructions for Windows
 - 📗 [Data Preparation](docs/DATA_PREPARATION.md) - How to prepare and organize your training data
 - 📙 [Training Guide](docs/TRAINING.md) - Complete training workflow and best practices
