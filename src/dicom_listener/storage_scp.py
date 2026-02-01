@@ -55,7 +55,13 @@ class DICOMReceiver:
         
         # Set default output directory
         if output_dir is None:
-            output_dir = r"C:\Users\IBA\RadiotherapyData\DICOM_exports"
+            # Use platform-independent default path
+            if Path(r"C:\Users\IBA\RadiotherapyData").exists():
+                # Windows default for IBA workstation
+                output_dir = r"C:\Users\IBA\RadiotherapyData\DICOM_exports"
+            else:
+                # Generic default for other systems
+                output_dir = Path.home() / "RadiotherapyData" / "DICOM_exports"
         
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -73,15 +79,8 @@ class DICOMReceiver:
         # Initialize Application Entity
         self.ae = AE(ae_title=self.ae_title)
         
-        # Add supported presentation contexts
-        # Support CT Image Storage
-        self.ae.add_supported_context(CTImageStorage)
-        
-        # Support RT Structure Set Storage
-        self.ae.add_supported_context(RTStructureSetStorage)
-        
-        # Support all transfer syntaxes for maximum compatibility
-        self.ae.add_supported_context(CTImageStorage, [
+        # Define common transfer syntaxes for maximum compatibility
+        transfer_syntaxes = [
             '1.2.840.10008.1.2',      # Implicit VR Little Endian
             '1.2.840.10008.1.2.1',    # Explicit VR Little Endian
             '1.2.840.10008.1.2.2',    # Explicit VR Big Endian
@@ -91,7 +90,14 @@ class DICOMReceiver:
             '1.2.840.10008.1.2.4.90', # JPEG 2000 Lossless
             '1.2.840.10008.1.2.4.91', # JPEG 2000
             '1.2.840.10008.1.2.5',    # RLE Lossless
-        ])
+        ]
+        
+        # Add supported presentation contexts
+        # Support CT Image Storage with all transfer syntaxes
+        self.ae.add_supported_context(CTImageStorage, transfer_syntaxes)
+        
+        # Support RT Structure Set Storage with all transfer syntaxes
+        self.ae.add_supported_context(RTStructureSetStorage, transfer_syntaxes)
         
         # Support Verification (C-ECHO)
         self.ae.add_supported_context(Verification)

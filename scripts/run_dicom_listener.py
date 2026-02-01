@@ -3,10 +3,29 @@
 import argparse
 import logging
 import signal
+import socket
 import sys
 from pathlib import Path
 
 from src.dicom_listener.storage_scp import DICOMReceiver
+
+
+def get_local_ip() -> str:
+    """Get the local IP address of the machine.
+    
+    Returns:
+        Local IP address as a string, or 'localhost' if unable to determine
+    """
+    try:
+        # Connect to an external host to determine local IP
+        # No actual connection is made, just to get the local interface
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+        return local_ip
+    except Exception:
+        return "localhost"
 
 
 def setup_logging(verbose: bool = False):
@@ -18,13 +37,16 @@ def setup_logging(verbose: bool = False):
     )
 
 
-def print_banner(receiver: DICOMReceiver, local_ip: str = "172.18.16.146"):
+def print_banner(receiver: DICOMReceiver, local_ip: str = None):
     """Print startup banner with configuration information.
     
     Args:
         receiver: The DICOMReceiver instance
         local_ip: Local IP address to display in configuration
     """
+    if local_ip is None:
+        local_ip = get_local_ip()
+    
     print("=" * 60)
     print("  DICOM Storage SCP (Listener)")
     print("=" * 60)
@@ -100,14 +122,14 @@ def main():
         "--output",
         type=str,
         default=None,
-        help="Output directory for received files (default: C:\\Users\\IBA\\RadiotherapyData\\DICOM_exports)"
+        help="Output directory for received files (default: platform-dependent, typically ~/RadiotherapyData/DICOM_exports)"
     )
     
     parser.add_argument(
         "--ip",
         type=str,
-        default="172.18.16.146",
-        help="Local IP address to display in configuration banner"
+        default=None,
+        help="Local IP address to display in configuration banner (auto-detected if not specified)"
     )
     
     parser.add_argument(
