@@ -125,6 +125,7 @@ RT-contouring-by-AI/
 │   └── paths.py                # Path configuration
 ├── src/                        # Source code
 │   ├── data_quality/          # Dataset quality assessment
+│   ├── dicom_listener/        # DICOM Storage SCP for receiving files
 │   ├── preprocessing/         # DICOM to NIfTI conversion
 │   ├── training/              # nnU-Net training wrapper
 │   ├── inference/             # Inference and prediction
@@ -133,7 +134,8 @@ RT-contouring-by-AI/
 │   ├── run_quality_assessment.py
 │   ├── run_preprocessing.py
 │   ├── run_training.py
-│   └── run_inference.py
+│   ├── run_inference.py
+│   └── run_dicom_listener.py
 ├── notebooks/                  # Jupyter notebooks
 │   └── 01_data_exploration.ipynb
 ├── docs/                       # Documentation
@@ -143,6 +145,72 @@ RT-contouring-by-AI/
 ├── requirements.txt            # Python dependencies
 └── setup.py                   # Package setup
 ```
+
+## DICOM Listener
+
+The DICOM Storage SCP (Service Class Provider) allows you to receive CT and RTSTRUCT files directly from Eclipse TPS or other DICOM sources for training data collection.
+
+### Starting the Listener
+
+```bash
+python scripts/run_dicom_listener.py --ae-title AUTOCONTOUR --port 11112
+```
+
+Command-line options:
+- `--ae-title`: AE Title for the DICOM SCP (default: AUTOCONTOUR)
+- `--port`: Port number to listen on (default: 11112)
+- `--output`: Output directory for received files (default: platform-dependent - see below)
+- `--ip`: Local IP address to display in banner (default: auto-detected)
+- `-v, --verbose`: Enable verbose logging
+
+**Default Output Directory:**
+- Windows IBA workstation: `C:\Users\IBA\RadiotherapyData\DICOM_exports`
+- Other systems: `~/RadiotherapyData/DICOM_exports`
+
+### Eclipse TPS Configuration
+
+To send files from Eclipse to the DICOM listener:
+
+1. **Open Eclipse** and go to External Beam Planning
+2. **Configure DICOM Export** destination:
+   - AE Title: `AUTOCONTOUR`
+   - IP Address: Your workstation IP (displayed in the listener startup banner)
+   - Port: `11112`
+3. **Export CT and RTSTRUCT** by selecting the patient case and choosing "Export to DICOM"
+
+**Note:** The listener will display your local IP address when it starts. Use this IP address in the Eclipse configuration.
+
+### Received Data Organization
+
+Files are automatically organized in the output directory by patient and study:
+
+```
+<output_dir>/
+├── PatientID_001/
+│   └── 20260201/
+│       ├── CT_0001.dcm
+│       ├── CT_0002.dcm
+│       ├── ...
+│       └── RS_label.dcm
+├── PatientID_002/
+│   └── 20260115/
+│       ├── CT_0001.dcm
+│       ├── ...
+│       └── RS_ProstatePelvis.dcm
+...
+```
+
+**File Naming Convention:**
+- CT Images: `CT_XXXX.dcm` (where XXXX is the instance number)
+- RT Structure Sets: `RS_<StructureSetLabel>.dcm`
+
+### Statistics
+
+When you stop the listener (Ctrl+C), it displays statistics:
+- Total files received
+- Number of CT images and RT structures
+- Number of unique patients
+- Uptime and error count
 
 ## API Service
 
